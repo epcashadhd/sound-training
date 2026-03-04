@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聲量訓練系統</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=cwTeXYen&display=swap" rel="stylesheet">
+    <style>
+        /* Soft, Counselling-Style Theme */
+        :root {
+            --bg-color: #F7F5F0;
+            --panel-bg: #FFFFFF;
+            --text-main: #6B635A;
+            --text-light: #9E968D;
+            --border-color: #EBE6DD;
+            --btn-green: #A3B899;
+            --btn-green-hover: #8DA384;
+            --btn-rose: #E0B0A6;
+            --btn-rose-hover: #C99A90;
+            --bar-gradient: linear-gradient(to top, #A3B899, #E8D595, #E0B0A6);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: "cwTeXYen", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Left Panel */
+        #left-panel {
+            width: 15%;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 15px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 15px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        #restart-btn {
+            background-color: var(--btn-rose);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(224, 176, 166, 0.3);
+        }
+
+        #restart-btn:hover {
+            background-color: var(--btn-rose-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(224, 176, 166, 0.4);
+        }
+
+        #restart-btn:active {
+            transform: translateY(0);
+        }
+
+        #volume-container {
+            flex-grow: 1;
+            width: 60px;
+            background-color: #F0EBE1;
+            border-radius: 30px;
+            margin: 10px 0 20px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        #volume-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--bar-gradient);
+            /* Smooth transition for the bar moving up */
+            transition: height 0.5s ease-out;
+        }
+
+        .scale-marks {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px 0;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .scale-mark {
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-main);
+            font-weight: 600;
+            opacity: 0.6;
+            z-index: 2;
+        }
+
+        /* Center Panel */
+        #center-panel {
+            width: 65%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #FFFFFF 0%, var(--bg-color) 100%);
+        }
+
+        #animation-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 10; /* Added z-index to control layering with clouds */
+            pointer-events: none; /* Allow clicks to pass through */
+        }
+        
+        #bling-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .anim-wrapper {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Slower, softer transition for counselling style */
+            transition: bottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* SVG Animations */
+        .svg-bubble {
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+            animation: breathe 4s ease-in-out infinite;
+        }
+        
+        #balloon {
+            transition: bottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        #hot-air-balloon {
+            animation: hotAirSway 3s ease-in-out infinite alternate;
+            transform-origin: 50% 30%;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(-2deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        @keyframes hotAirSway {
+            0% { transform: translateX(-5px) rotate(-2deg); }
+            100% { transform: translateX(5px) rotate(2deg); }
+        }
+
+        .balloon-string {
+            transform-origin: top center;
+            animation: string-sway 3s ease-in-out infinite alternate;
+        }
+
+        /* General Balloon Style - Default for Desktop */
+        .balloon-img {
+            width: auto;
+            max-width: 120px;
+            max-height: 35vh; /* Prevent it from being too tall on any screen */
+            display: block;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        @keyframes string-sway {
+            0% { transform: rotate(-2deg); }
+            100% { transform: rotate(2deg); }
+        }
+
+        /* Right Panel */
+        #right-panel {
+            width: 20%;
+            background-color: var(--panel-bg);
+            border-left: 1px solid var(--border-color);
+            box-shadow: -2px 0 15px rgba(0,0,0,0.02);
+            padding: 40px 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+            z-index: 10;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #mic-btn {
+            background-color: var(--btn-green);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(163, 184, 153, 0.4);
+        }
+
+        #mic-btn:hover {
+            background-color: var(--btn-green-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(163, 184, 153, 0.5);
+        }
+        
+        #mic-btn:active {
+            transform: translateY(0);
+        }
+
+        #mic-btn.active {
+            background-color: #FFFFFF;
+            border: 2px solid var(--btn-green);
+            color: var(--btn-green);
+            box-shadow: none;
+        }
+
+        /* Sensitivity Boxes */
+        .stars-container {
+            display: flex;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px 0;
+            justify-content: center;
+        }
+        
+        .sensitivity-box {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-light);
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            background-color: transparent;
+        }
+        
+        .sensitivity-box.filled {
+            background-color: #FFD700; /* Gold/Yellow */
+            border-color: #E6C200;
+        }
+        
+        .sensitivity-box:hover {
+            transform: scale(1.1);
+        }
+
+        /* Theme Selector */
+        .theme-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .theme-option {
+            background: #F0EBE1;
+            padding: 12px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid transparent;
+            font-weight: 600;
+            color: var(--text-light);
+            text-align: center;
+            flex: 1;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .theme-option.active {
+            background: #FFFFFF;
+            border-color: var(--btn-rose);
+            color: var(--btn-rose);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(224, 176, 166, 0.3);
+            z-index: 2;
+        }
+        
+        .theme-option:hover:not(.active) {
+            background: #FFFFFF;
+            transform: translateY(-2px);
+        }
+
+        /* Accumulate Button */
+        .accumulate-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 12px;
+            border: 2px solid #E0B0A6;
+            background: transparent;
+            color: #E0B0A6;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+        .accumulate-btn:hover {
+            background: rgba(224, 176, 166, 0.1);
+            transform: translateY(-2px);
+        }
+        .accumulate-btn.active {
+            background: #E0B0A6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(224, 176, 166, 0.3);
+        }
+
+        h2 {
+            margin: 0;
+            text-align: center;
+            font-size: 18px;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+        
+        label {
+            font-size: 15px;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* Balloon Image Style */
+        .balloon-img {
+            width: 200px;
+            position: relative;
+            margin-bottom: 50px;
+            z-index: 2;
+            filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.4));
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            /* Adjust Panel Widths */
+            #left-panel { width: 20%; padding: 10px 5px; }
+            #right-panel { width: 25%; padding: 10px 5px; }
+            #center-panel { width: 55%; }
+
+            /* Scale down volume bar */
+            #volume-container { width: 30px; border-radius: 15px; }
+            .scale-mark { font-size: 10px; }
+            h2 { font-size: 12px; }
+
+            /* Scale down controls */
+            #mic-btn, #restart-btn { padding: 8px 4px; font-size: 11px; border-radius: 10px; }
+            .control-group { gap: 5px; }
+            label { font-size: 11px; }
+
+            /* Sensitivity Boxes */
+            .sensitivity-box { width: 10px; height: 10px; border-width: 1px; border-radius: 2px; }
+            .stars-container { gap: 2px; flex-wrap: wrap; }
+
+            /* Theme Selector */
+            .theme-option { padding: 5px; font-size: 10px; border-radius: 8px; }
+            .theme-selector { gap: 5px; }
+
+            /* Balloon/Bubble Size */
+            .balloon-img { width: auto; max-width: 80px; max-height: 30vh; margin-bottom: 20px; }
+            .svg-bubble { width: 80px !important; height: 80px !important; }
+        }
+
+        /* Landscape Mobile Fix */
+        @media (max-height: 500px) {
+            .balloon-img { width: auto; max-width: 60px; max-height: 40vh; margin-bottom: 10px; }
+            .svg-bubble { width: 60px !important; height: 60px !important; }
+            #center-panel { align-items: flex-end; } /* Ensure alignment */
+        }
+
+        /* Test Mode Styles */
+        #test-mode-btn {
+            background-color: #A1C4FD;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(161, 196, 253, 0.4);
+        }
+        #test-mode-btn:hover {
+            background-color: #8AB3F5;
+            transform: translateY(-2px);
+        }
+        #test-mode-btn.active {
+            background-color: #fff;
+            color: #A1C4FD;
+            border: 2px solid #A1C4FD;
+            box-shadow: none;
+        }
+
+        /* Next Trial Button */
+        #next-trial-btn {
+            background-color: #A3B899;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(163, 184, 153, 0.3);
+            display: none; /* Hidden by default */
+            margin-top: 10px;
+        }
+        #next-trial-btn:hover {
+            background-color: #8DA384;
+            transform: translateY(-2px);
+        }
+        #next-trial-btn.active {
+            display: block;
+            animation: pulseBtn 2s infinite;
+        }
+        #next-trial-btn.open-gift {
+            background-color: #9B59B6; /* Purple for Open Gift */
+            box-shadow: 0 4px 10px rgba(155, 89, 182, 0.3);
+        }
+        #next-trial-btn.open-gift:hover {
+            background-color: #8E44AD;
+        }
+
+        /* Next Level Button */
+        #next-level-btn {
+            background-color: #F39C12; /* Orange */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
+            display: none; /* Hidden by default */
+            margin-top: 10px;
+        }
+        #next-level-btn:hover {
+            background-color: #E67E22;
+            transform: translateY(-2px);
+        }
+        #next-level-btn.active {
+            display: block;
+            animation: pulseBtn 2s infinite;
+        }
+
+        @keyframes pulseBtn {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(163, 184, 153, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(163, 184, 153, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(163, 184, 153, 0); }
+        }
+
+        /* 3D Gift Box */
+        #gift-box-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            display: none;
+            perspective: 800px; /* Adjusted perspective */
+        }
+        #gift-box-container.active {
+            display: block;
+        }
+
+        .cube {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg) rotateY(45deg);
+            transition: transform 1s;
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border: 2px solid rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            background: #E0B0A6; /* Rose base */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Removed backface-visibility: hidden to fix lid visibility */
+        }
+
+        .cube-face--front  { transform: rotateY(  0deg) translateZ(60px); z-index: 2; }
+        .cube-face--right  { transform: rotateY( 90deg) translateZ(60px); background: #D69E94; z-index: 2; }
+        .cube-face--back   { transform: rotateY(180deg) translateZ(60px); z-index: 1; }
+        .cube-face--left   { transform: rotateY(-90deg) translateZ(60px); background: #D69E94; z-index: 1; }
+        .cube-face--top    { 
+            transform: translateZ(-60px) rotateX(90deg);
+            background: #C99A90; 
+            transform-origin: top center; /* Hinge at the back edge */
+            transition: transform 1s ease-in-out;
+            z-index: 3;
+        }
+        .cube-face--bottom { transform: rotateX(-90deg) translateZ(60px); background: #B58B82; z-index: 1; }
+
+        /* Ribbon/Decoration on faces */
+        .ribbon-v {
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            background: #FFFFFF;
+            opacity: 0.6;
+        }
+        .ribbon-h {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background: #FFFFFF;
+            opacity: 0.6;
+        }
+
+        /* Opening Animation */
+        .cube.open .cube-face--top {
+            transform: translateZ(-60px) rotateX(225deg); /* Open wider */
+        }
+
+        /* Final Animal */
+        #final-animal-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        #final-animal-container.active {
+            display: flex;
+        }
+        
+        #final-animal-img {
+            width: 0;
+            opacity: 0;
+            transition: all 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.3));
+        }
+        
+        #final-animal-container.show-animal #final-animal-img {
+            width: 80%;
+            max-width: 500px;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Bling Stars */
+        .bling-star {
+            position: fixed; /* Fixed to screen */
+            width: 20px;
+            height: 20px;
+            background: gold;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            opacity: 0;
+            z-index: 1000; /* High z-index */
+            pointer-events: none;
+        }
+        @keyframes blingPop {
+            0% { transform: translate(0, 0) scale(0) rotate(0deg); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(180deg); opacity: 0; }
+        }
+
+        /* Clouds Container */
+        #clouds-container {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 5%;
+            box-sizing: border-box;
+            /* z-index removed to allow children to have different z-indices relative to balloon */
+            pointer-events: none;
+        }
+        #clouds-container.hidden { display: none; }
+
+        .cloud-img {
+            width: 140px; /* Increased size */
+            height: auto;
+            opacity: 0.5;
+            transition: opacity 0.5s ease, transform 3s ease-in-out;
+            animation: cloudFloat 4s ease-in-out infinite alternate;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1));
+            display: block;
+            position: relative; /* Needed for z-index */
+        }
+        
+        /* Layering: Balloon is z-index 10 (from animation-container) */
+        .cloud-img:nth-child(1) { z-index: 15; animation-delay: 0s; } /* Front */
+        .cloud-img:nth-child(2) { z-index: 5; animation-delay: 1s; margin-top: 40px; } /* Behind (5 < 10) */
+        .cloud-img:nth-child(3) { z-index: 15; animation-delay: 2s; } /* Front */
+        .cloud-img:nth-child(4) { z-index: 15; animation-delay: 3s; margin-top: 20px; } /* Front */
+
+        .cloud-img.active {
+            opacity: 1;
+            filter: drop-shadow(0 0 15px #A1C4FD);
+            transform: scale(1.2);
+        }
+
+        @keyframes cloudFloat {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(15px, -15px); } /* Moves right and up */
+        }
+
+        /* Fade out effect for other elements */
+        .fade-out {
+            opacity: 0 !important;
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .cloud-img { width: 60px; }
+            .cube { width: 80px; height: 80px; }
+            .cube-face { width: 80px; height: 80px; }
+            .cube-face--front  { transform: rotateY(  0deg) translateZ(40px); }
+            .cube-face--right  { transform: rotateY( 90deg) translateZ(40px); }
+            .cube-face--back   { transform: rotateY(180deg) translateZ(40px); }
+            .cube-face--left   { transform: rotateY(-90deg) translateZ(40px); }
+            
+            /* Fix Mobile Top Face Logic to match Desktop */
+            .cube-face--top    { transform: translateZ(-40px) rotateX(90deg); }
+            .cube-face--bottom { transform: rotateX(-90deg) translateZ(40px); }
+            
+            .cube.open .cube-face--top {
+                transform: translateZ(-40px) rotateX(225deg);
+            }
+            
+            .cube.open #surprise-animal {
+                transform: translate(-50%, -150%) scale(1.3) translateZ(50px);
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Left Panel -->
+    <div id="left-panel">
+        <h2>聲量</h2>
+        <div id="volume-container">
+            <div id="volume-bar"></div>
+            <div class="scale-marks">
+                <div class="scale-mark">10</div>
+                <div class="scale-mark">9</div>
+                <div class="scale-mark">8</div>
+                <div class="scale-mark">7</div>
+                <div class="scale-mark">6</div>
+                <div class="scale-mark">5</div>
+                <div class="scale-mark">4</div>
+                <div class="scale-mark">3</div>
+                <div class="scale-mark">2</div>
+                <div class="scale-mark">1</div>
+                <div class="scale-mark">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center Panel -->
+    <div id="center-panel">
+        <div id="clouds-container" class="hidden">
+            <!-- 4 Clouds with Images -->
+            <img class="cloud-img" src="https://github.com/epcashadhd/sound-training/blob/main/cloud4.png?raw=true">
+            <img class="cloud-img" src="https://github.com/epcashadhd/sound-training/blob/main/cloud1.png?raw=true">
+            <img class="cloud-img" src="https://github.com/epcashadhd/sound-training/blob/main/cloud2.png?raw=true">
+            <img class="cloud-img" src="https://github.com/epcashadhd/sound-training/blob/main/cloud3.png?raw=true">
+        </div>
+
+        <div id="gift-box-container">
+            <div class="cube">
+                <div class="cube-face cube-face--front">
+                    <div class="ribbon-v"></div>
+                    <div class="ribbon-h"></div>
+                </div>
+                <div class="cube-face cube-face--back"></div>
+                <div class="cube-face cube-face--right">
+                    <div class="ribbon-h"></div>
+                </div>
+                <div class="cube-face cube-face--left">
+                    <div class="ribbon-h"></div>
+                </div>
+                <div class="cube-face cube-face--top">
+                    <div class="ribbon-v"></div>
+                    <div class="ribbon-h"></div>
+                </div>
+                <div class="cube-face cube-face--bottom"></div>
+            </div>
+        </div>
+
+        <div id="final-animal-container">
+            <img id="final-animal-img" src="https://github.com/epcashadhd/sound-training/blob/main/animal1.png?raw=true">
+        </div>
+        
+        <div id="bling-container"></div>
+
+        <div id="animation-container">
+            <div id="anim-wrapper" class="anim-wrapper theme-balloon">
+                <div id="anim-element"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div id="right-panel">
+        <div class="control-group">
+            <button id="mic-btn">開啟咪高峰</button>
+            <button id="restart-btn">重新開始</button>
+        </div>
+        
+        <div class="control-group">
+            <label id="sensitivity-label">靈敏度</label>
+            <div id="sensitivity-stars" class="stars-container">
+                <!-- Stars injected by JS -->
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>主題</label>
+            <div class="theme-selector">
+                <div class="theme-option active" data-theme="balloon">
+                    <span>氫氣球</span>
+                </div>
+                <div class="theme-option" data-theme="hot_air_balloon">
+                    <span>熱氣球</span>
+                </div>
+                <div class="theme-option" data-theme="bubble">
+                    <span>泡泡</span>
+                </div>
+            </div>
+            <button id="accumulate-btn" class="accumulate-btn">累積聲音</button>
+        </div>
+
+        <div class="control-group">
+            <button id="test-mode-btn">小測試</button>
+            <button id="next-trial-btn">試多次</button>
+            <button id="next-level-btn">下一關</button>
+        </div>
+    </div>
+
+    <script>
+        let audioContext;
+        let analyser;
+        let microphone;
+        let dataArray;
+        let isRecording = false;
+        let maxVolume = 0; // Holds the highest volume reached
+        let noiseFloor = 0; // Ambient noise level
+        let animationFrameId;
+        let sensitivity = 4; // Default sensitivity (1-8)
+        let currentTheme = 'balloon';
+        let isAccumulateMode = false;
+        let accumulatedVolume = 0;
+        
+        // Test Mode Variables
+        let isTestMode = false;
+        let currentLevel = 1;
+        let cloudsCollected = 0;
+        let isTrialLocked = false;
+
+        const volumeBar = document.getElementById('volume-bar');
+        const restartBtn = document.getElementById('restart-btn');
+        const micBtn = document.getElementById('mic-btn');
+        const sensitivityStarsContainer = document.getElementById('sensitivity-stars');
+        const sensitivityLabel = document.getElementById('sensitivity-label');
+        const testModeBtn = document.getElementById('test-mode-btn');
+        const nextTrialBtn = document.getElementById('next-trial-btn');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const accumulateBtn = document.getElementById('accumulate-btn');
+        const cloudsContainer = document.getElementById('clouds-container');
+        const giftBoxContainer = document.getElementById('gift-box-container');
+        const giftBox = document.querySelector('.cube');
+        const finalAnimalContainer = document.getElementById('final-animal-container');
+        const blingContainer = document.getElementById('bling-container');
+        const animationContainer = document.getElementById('animation-container');
+        const animWrapper = document.getElementById('anim-wrapper');
+        const animElement = document.getElementById('anim-element');
+        const centerPanel = document.getElementById('center-panel');
+        const themeOptions = document.querySelectorAll('.theme-option');
+
+        // Init Sensitivity Boxes
+        function initSensitivity(maxStars = 8) {
+            sensitivityStarsContainer.innerHTML = '';
+            for (let i = 1; i <= maxStars; i++) {
+                const box = document.createElement('div');
+                let isFilled = false;
+                if (isTestMode) {
+                    isFilled = i <= currentLevel;
+                } else {
+                    isFilled = i <= sensitivity;
+                }
+                
+                box.className = `sensitivity-box ${isFilled ? 'filled' : ''}`;
+                box.addEventListener('click', () => {
+                    if (isTestMode) {
+                        currentLevel = i;
+                    } else {
+                        sensitivity = i;
+                    }
+                    updateSensitivityUI();
+                    resetApp(); // Reset when sensitivity changes
+                });
+                sensitivityStarsContainer.appendChild(box);
+            }
+        }
+
+        function updateSensitivityUI() {
+            const boxes = sensitivityStarsContainer.querySelectorAll('.sensitivity-box');
+            const target = isTestMode ? currentLevel : sensitivity;
+            boxes.forEach((box, index) => {
+                if (index < target) {
+                    box.classList.add('filled');
+                } else {
+                    box.classList.remove('filled');
+                }
+            });
+        }
+        
+        initSensitivity();
+
+        // Accumulate Button Logic
+        accumulateBtn.addEventListener('click', () => {
+            isAccumulateMode = !isAccumulateMode;
+            if (isAccumulateMode) {
+                accumulateBtn.classList.add('active');
+                accumulateBtn.style.backgroundColor = '#9b59b6'; // Purple color for active
+                accumulateBtn.style.color = 'white';
+            } else {
+                accumulateBtn.classList.remove('active');
+                accumulateBtn.style.backgroundColor = ''; // Reset
+                accumulateBtn.style.color = '';
+            }
+            resetApp();
+        });
+
+        // Test Mode Toggle
+        testModeBtn.addEventListener('click', () => {
+            isTestMode = !isTestMode;
+            if (isTestMode) {
+                testModeBtn.classList.add('active');
+                testModeBtn.textContent = '退出測試';
+                sensitivityLabel.textContent = '關卡';
+                currentLevel = 1;
+                initSensitivity(8); // Changed from 10 to 8
+                cloudsContainer.classList.remove('hidden');
+            } else {
+                testModeBtn.classList.remove('active');
+                testModeBtn.textContent = '小測試';
+                sensitivityLabel.textContent = '靈敏度';
+                initSensitivity(8);
+                cloudsContainer.classList.add('hidden');
+                nextTrialBtn.classList.remove('active');
+                nextTrialBtn.style.display = 'none';
+                nextLevelBtn.classList.remove('active');
+                nextLevelBtn.style.display = 'none';
+            }
+            resetApp();
+        });
+
+        // Theme Selection
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Update UI
+                themeOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                // Update State
+                currentTheme = option.dataset.theme;
+                updateTheme(currentTheme);
+                
+                // Reset App
+                resetApp();
+            });
+        });
+
+        function resetApp() {
+            maxVolume = 0;
+            accumulatedVolume = 0;
+            volumeBar.style.height = '0%';
+            updateAnimation(0);
+            
+            // Reset Test Mode State
+            cloudsCollected = 0;
+            isTrialLocked = false;
+            
+            // Reset Clouds
+            const clouds = document.querySelectorAll('.cloud-img');
+            clouds.forEach(c => c.classList.remove('active'));
+            
+            // Reset Box
+            giftBoxContainer.classList.remove('active', 'fade-out');
+            if (giftBox) giftBox.classList.remove('open');
+            
+            // Reset Final Animal
+            finalAnimalContainer.classList.remove('active', 'show-animal');
+            
+            // Update Animal Image for Current Level
+            const animalImg = document.getElementById('final-animal-img');
+            if (animalImg) {
+                // Randomly select an animal from 1 to 15
+                const randomAnimal = Math.floor(Math.random() * 15) + 1;
+                animalImg.src = `https://github.com/epcashadhd/sound-training/blob/main/animal${randomAnimal}.png?raw=true`;
+            }
+            
+            // Reset Visibility
+            animationContainer.classList.remove('fade-out');
+            cloudsContainer.classList.remove('fade-out');
+            
+            // Reset Next Trial Button
+            nextTrialBtn.classList.remove('active', 'open-gift');
+            nextTrialBtn.style.display = 'none';
+            
+            // Reset Next Level Button
+            nextLevelBtn.classList.remove('active');
+            nextLevelBtn.style.display = 'none';
+            
+            // Calibrate noise floor if recording
+            if (isRecording && analyser) {
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += dataArray[i];
+                }
+                let average = sum / dataArray.length;
+                noiseFloor = average;
+                console.log("Noise floor calibrated to:", noiseFloor);
+            } else {
+                noiseFloor = 0;
+            }
+        }
+
+        // Next Trial Button Logic
+        nextTrialBtn.addEventListener('click', () => {
+            // Removed check for isTrialLocked to allow retrying failed attempts
+            
+            // Check if it's the "Open Gift" state
+            if (cloudsCollected >= 4) {
+                triggerCompletion();
+                nextTrialBtn.style.display = 'none';
+                return;
+            }
+            
+            // Reset for next trial
+            isTrialLocked = false;
+            maxVolume = 0;
+            accumulatedVolume = 0; // Reset accumulated volume
+            volumeBar.style.height = '0%';
+            updateAnimation(0);
+            
+            // Hide button
+            nextTrialBtn.classList.remove('active');
+            nextTrialBtn.style.display = 'none';
+        });
+
+        // Next Level Button Logic
+        nextLevelBtn.addEventListener('click', () => {
+            // Increment level (cap at 8)
+            if (currentLevel < 8) {
+                currentLevel++;
+            } else {
+                currentLevel = 1; // Loop back or stay? Let's loop for now or just reset.
+            }
+            
+            // Update UI
+            updateSensitivityUI();
+            
+            // Reset App
+            resetApp();
+        });
+
+        // Restart button
+        restartBtn.addEventListener('click', resetApp);
+
+        function updateTheme(theme) {
+            // Reset styles and classes
+            animWrapper.className = `anim-wrapper theme-${theme}`;
+            animWrapper.style.transform = 'translateX(-50%)';
+            animWrapper.style.bottom = '20px';
+            animElement.innerHTML = '';
+            
+            switch(theme) {
+                case 'balloon':
+                    animElement.innerHTML = `
+                        <img id="balloon" src="https://github.com/epcashadhd/sound-training/blob/main/ballon.png?raw=true" class="balloon-img">
+                    `;
+                    break;
+                case 'hot_air_balloon':
+                    animElement.innerHTML = `
+                        <img id="hot-air-balloon" src="https://github.com/epcashadhd/sound-training/blob/main/hot_air_ballon.png?raw=true" class="balloon-img">
+                    `;
+                    break;
+                case 'bubble':
+                    animElement.innerHTML = `
+                        <svg viewBox="0 0 100 100" width="200" height="200" class="svg-bubble">
+                          <defs>
+                            <radialGradient id="bubbleGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                              <stop offset="0%" style="stop-color:#fff;stop-opacity:0" />
+                              <stop offset="80%" style="stop-color:#fff;stop-opacity:0.1" />
+                              <stop offset="100%" style="stop-color:#a1c4fd;stop-opacity:0.6" />
+                            </radialGradient>
+                            <filter id="bubbleGlow">
+                              <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                              <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                              </feMerge>
+                            </filter>
+                          </defs>
+                          <circle cx="50" cy="50" r="45" fill="url(#bubbleGrad)" stroke="#c2e9fb" stroke-width="1" filter="url(#bubbleGlow)"/>
+                          <!-- Highlights -->
+                          <path d="M 25,25 Q 40,15 60,20" stroke="white" stroke-width="2" fill="none" opacity="0.8" stroke-linecap="round"/>
+                          <ellipse cx="30" cy="30" rx="5" ry="3" fill="white" opacity="0.9" transform="rotate(-45 30 30)"/>
+                          <ellipse cx="70" cy="70" rx="3" ry="2" fill="white" opacity="0.6" transform="rotate(-45 70 70)"/>
+                        </svg>
+                    `;
+                    animWrapper.style.bottom = '50%';
+                    animWrapper.style.transform = 'translate(-50%, 50%) scale(1)';
+                    break;
+            }
+        }
+
+        // Start/Stop Mic
+        micBtn.addEventListener('click', async () => {
+            if (isRecording) {
+                // Stop recording
+                if (audioContext) {
+                    audioContext.close();
+                }
+                cancelAnimationFrame(animationFrameId);
+                isRecording = false;
+                micBtn.textContent = '開啟咪高峰';
+                micBtn.classList.remove('active');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                
+                analyser.smoothingTimeConstant = 0.8;
+                analyser.fftSize = 256;
+                
+                microphone.connect(analyser);
+                
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                
+                isRecording = true;
+                micBtn.textContent = '接收聲音中...';
+                micBtn.classList.add('active');
+                
+                // Initial calibration delay
+                setTimeout(() => {
+                    if(isRecording) {
+                        analyser.getByteFrequencyData(dataArray);
+                        let sum = 0;
+                        for (let i = 0; i < dataArray.length; i++) {
+                            sum += dataArray[i];
+                        }
+                        noiseFloor = sum / dataArray.length;
+                    }
+                }, 500);
+                
+                update();
+            } catch (err) {
+                console.error('Error accessing microphone:', err);
+                alert('無法開啟咪高峰！請確保瀏覽器允許咗咪高峰權限。');
+            }
+        });
+
+        function update() {
+            if (!isRecording) return;
+            
+            analyser.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                sum += dataArray[i];
+            }
+            let average = sum / dataArray.length;
+            
+            // Subtract noise floor
+            let adjustedAverage = Math.max(0, average - noiseFloor);
+            
+            // Map adjusted average to 0-100%
+            // Apply sensitivity multiplier
+            let multiplier;
+            if (isTestMode) {
+                // Test Mode: Level 1 (Easy) = Sensitivity 8 (High Multiplier)
+                // Level 8 (Hard) = Sensitivity 1 (Low Multiplier)
+                // Formula: (9 - Level) / 2
+                multiplier = (9 - currentLevel) / 2;
+            } else {
+                // Normal Mode: Sensitivity 1-8 -> Multiplier 0.5 - 4.0
+                multiplier = sensitivity / 2;
+            }
+            
+            // 128 is used as a baseline for a decently loud sound
+            // We use a slightly smaller divisor since we subtracted noise
+            let currentVolume = (adjustedAverage / 100) * 100 * multiplier;
+            currentVolume = Math.min(100, Math.max(0, currentVolume));
+            
+            let displayVolume = 0;
+
+            if (isAccumulateMode) {
+                // Accumulate Mode (Applies to BOTH Test and Normal)
+                // Accumulate volume over time based on input intensity
+                // Increased factor to 0.06 to match user expectation of sensitivity
+                // A short burst of "Level 4" sound should add roughly "Level 4" worth of volume
+                if (!isTrialLocked) {
+                    accumulatedVolume += currentVolume * 0.06;
+                    accumulatedVolume = Math.min(100, accumulatedVolume);
+                }
+                displayVolume = accumulatedVolume;
+            } else {
+                // Non-Accumulate Mode (BOTH Normal and Test)
+                // Max Hold Behavior: Volume only goes up, never down (until reset)
+                if (currentVolume > maxVolume) {
+                    maxVolume = currentVolume;
+                }
+                displayVolume = maxVolume;
+            }
+
+            // Test Mode Specific Logic
+            if (isTestMode) {
+                 // If locked, keep it at top
+                 if (isTrialLocked) {
+                     displayVolume = 100;
+                 }
+                 
+                 // Show "Next Trial" button if volume > 2 (Attempt started)
+                 // This allows user to retry even if they don't reach the top
+                 if (displayVolume > 2 && nextTrialBtn.style.display === 'none' && cloudsCollected < 4) {
+                     nextTrialBtn.style.display = 'block';
+                     nextTrialBtn.textContent = '試多次';
+                     nextTrialBtn.classList.remove('open-gift');
+                     setTimeout(() => nextTrialBtn.classList.add('active'), 100);
+                 }
+                 
+                 // Check for trial completion (Level 10 equivalent / Top reached)
+                 if (displayVolume >= 95 && !isTrialLocked && cloudsCollected < 4) {
+                     cloudsCollected++;
+                     const clouds = document.querySelectorAll('.cloud-img');
+                     
+                     // Activate specific cloud based on collection count
+                     // cloudsCollected is 1-based (1, 2, 3, 4)
+                     // Array is 0-based
+                     if (clouds[cloudsCollected-1]) {
+                         clouds[cloudsCollected-1].classList.add('active');
+                     }
+                     
+                     isTrialLocked = true;
+                     
+                     // Show "Next Trial" button (Ensure it's visible and updated)
+                     nextTrialBtn.style.display = 'block';
+                     
+                     if (cloudsCollected < 4) {
+                        nextTrialBtn.textContent = '試多次';
+                        nextTrialBtn.classList.remove('open-gift');
+                     } else {
+                        // All 4 collected, show button to trigger finale
+                        nextTrialBtn.textContent = '打開禮物';
+                        nextTrialBtn.classList.add('open-gift');
+                     }
+                     
+                     setTimeout(() => nextTrialBtn.classList.add('active'), 100);
+                 }
+            }
+            
+            // Update UI
+            volumeBar.style.height = `${displayVolume}%`;
+            updateAnimation(displayVolume);
+            
+            animationFrameId = requestAnimationFrame(update);
+        }
+
+        function triggerCompletion() {
+            // Fade out balloon and clouds
+            animationContainer.classList.add('fade-out');
+            cloudsContainer.classList.add('fade-out');
+            
+            // Show Box
+            giftBoxContainer.classList.add('active');
+            
+            // Open Box after short delay
+            setTimeout(() => {
+                if (giftBox) giftBox.classList.add('open');
+                
+                // Trigger Star Effect
+                setTimeout(triggerBling, 300);
+                
+                // After box opens and stars, fade out box and show big animal
+                setTimeout(() => {
+                    giftBoxContainer.classList.add('fade-out');
+                    
+                    finalAnimalContainer.classList.add('active');
+                    // Slight delay to ensure display:flex is applied before transition
+                    requestAnimationFrame(() => {
+                        finalAnimalContainer.classList.add('show-animal');
+                        
+                        // Show Next Level Button
+                        setTimeout(() => {
+                            nextLevelBtn.style.display = 'block';
+                            setTimeout(() => nextLevelBtn.classList.add('active'), 100);
+                        }, 1000);
+                    });
+                    
+                }, 1500);
+                
+            }, 500);
+        }
+
+        function triggerBling() {
+            const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#FFFFFF', '#FFE66D'];
+            
+            for(let i=0; i<30; i++) {
+                const star = document.createElement('div');
+                star.className = 'bling-star';
+                
+                // Center of screen
+                const startX = (window.innerWidth / 2);
+                const startY = (window.innerHeight / 2);
+                
+                // Explosion trajectory
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 50 + Math.random() * 150;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                star.style.left = `50%`;
+                star.style.top = `50%`;
+                star.style.setProperty('--tx', `${tx}px`);
+                star.style.setProperty('--ty', `${ty}px`);
+                star.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Randomize size
+                const size = 10 + Math.random() * 20;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                star.style.animation = `blingPop 1s ease-out forwards`;
+                blingContainer.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function updateAnimation(volumePercent) {
+            const theme = currentTheme;
+            const normalizedVol = volumePercent / 100; // 0 to 1
+            
+            switch(theme) {
+                case 'balloon':
+                case 'hot_air_balloon':
+                    // Rises to top slowly
+                    // Get actual balloon height if possible, otherwise estimate
+                    let balloonHeight = 0;
+                    const balloonImg = document.querySelector('.balloon-img');
+                    
+                    if (balloonImg) {
+                        // Use getBoundingClientRect to get rendered height including transforms/scaling
+                        balloonHeight = balloonImg.getBoundingClientRect().height;
+                    }
+                    
+                    if (balloonHeight === 0) {
+                        // Fallback estimates based on screen size
+                        if (window.innerHeight <= 500) balloonHeight = 100; // Landscape mobile
+                        else if (window.innerWidth <= 768) balloonHeight = 150; // Portrait mobile
+                        else balloonHeight = 350; // Desktop default
+                    }
+                    
+                    // Calculate available vertical space
+                    // centerPanel.clientHeight is the total height
+                    // Use a larger buffer (15% of height) to ensure it stays well within screen
+                    // This accounts for animations (float) and potential layout shifts
+                    const topBuffer = Math.max(60, centerPanel.clientHeight * 0.15);
+                    
+                    const maxBottom = centerPanel.clientHeight - balloonHeight - topBuffer;
+                    
+                    // Ensure we don't go negative
+                    const safeMaxBottom = Math.max(0, maxBottom);
+                    
+                    animWrapper.style.bottom = `${20 + normalizedVol * safeMaxBottom}px`;
+                    animWrapper.style.transform = 'translateX(-50%)';
+                    break;
+                case 'bubble':
+                    // Stays in center, scales up
+                    // Calculate max allowed size (85% of the smallest screen dimension to stay within bounds)
+                    const minDimension = Math.min(centerPanel.clientWidth, centerPanel.clientHeight);
+                    const maxAllowedSize = minDimension * 0.85;
+                    const baseSize = window.innerWidth <= 768 ? 80 : 200; // Base size matches CSS
+                    
+                    // Start from a small size (e.g., 20% of base)
+                    const startSize = baseSize * 0.2;
+                    const minScale = startSize / baseSize;
+                    const maxScale = maxAllowedSize / baseSize;
+                    
+                    const scale = minScale + normalizedVol * (maxScale - minScale);
+                    
+                    animWrapper.style.bottom = '50%';
+                    animWrapper.style.transform = `translate(-50%, 50%) scale(${scale})`;
+                    break;
+            }
+        }
+
+        // Initialize
+        updateTheme('balloon');
+    </script>
+</body>
+</html>
